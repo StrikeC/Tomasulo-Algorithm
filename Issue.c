@@ -1,5 +1,5 @@
 //Issue
-void issue (){
+void issue() {
 	int pointer; // rf pointer
 	for (int i=0;i<10;i++){
 		if (iq[i][0]==0){
