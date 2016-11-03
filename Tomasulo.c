@@ -64,10 +64,10 @@ struct integerMultiplyUnit
 uint8_t numberOfInstructions;
 uint32_t numberOfCycles;
 int32_t registerFile[8]; // 8-entry array of integers used as register file
-int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (-1 means empty)
+int8_t registerAllocationTable[8] = {-1,-1,-1,-1,-1,-1,-1,-1}; // 8-entry array of integers used as RAT (-1 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
 struct instruction instructions[10]; // 10-entry array of instruction records
-struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RSO
+struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
 
@@ -167,10 +167,10 @@ int main( int argc, char * argv[] )
         #endif
 
         // Loop for each cycle
-        for( uint16_t i = 0; i < numberOfCycles; i++ )
+        for( uint16_t i = 1; i <= numberOfCycles; i++ )
         {
             #ifdef DEBUG_MODE
-            printf( "--CYCLE %u--\n", i+1 );
+            printf( "--CYCLE %u--\n", i );
             #endif
         }
     }
@@ -199,11 +199,17 @@ void checkIssue( uint8_t instructionIndex )
 
         if( !rs[2].busy && !issuedSuccessfully )
         {
+            rs[2].busy = true;
+            rs[2].op = instructions[instructionIndex].op;
+            
             issuedSuccessfully = true;
         }
 
         if( !rs[3].busy && !issuedSuccessfully )
         {
+            rs[3].busy = true;
+            rs[3].op = instructions[instructionIndex].op;
+            
             issuedSuccessfully = true;
         }
 
@@ -218,11 +224,17 @@ void checkIssue( uint8_t instructionIndex )
         bool issuedSuccessfully = false;
         if( !rs[4].busy )
         {
+            rs[4].busy = true;
+            rs[4].op = instructions[instructionIndex].op;
+            
             issuedSuccessfully = true;
         }
 
         if( !rs[5].busy && !issuedSuccessfully )
         {
+            rs[5].busy = true;
+            rs[5].op = instructions[instructionIndex].op;
+            
             issuedSuccessfully = true;
         }
 
