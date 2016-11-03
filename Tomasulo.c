@@ -67,7 +67,7 @@ int32_t registerFile[8]; // 8-entry array of integers used as register file
 int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (-1 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
 struct instruction instructions[10]; // 10-entry array of instruction records
-struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
+struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RSO
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
 
@@ -91,7 +91,7 @@ int main( int argc, char * argv[] )
     {
         // print argv[0] assuming it is the program name with the following usage hint to user
         printf( "usage: %s file_path\n", argv[0] );
-        }
+    }
     else // correct number of arguments
     {
         FILE * inputFile;
@@ -166,10 +166,11 @@ int main( int argc, char * argv[] )
         printf( "\n" );
         #endif
 
+        // Loop for each cycle
         for( uint16_t i = 0; i < numberOfCycles; i++ )
         {
             #ifdef DEBUG_MODE
-            printf( "--CYCLE %u--\n", numberOfCycles );
+            printf( "--CYCLE %u--\n", i+1 );
             #endif
         }
     }
@@ -192,7 +193,7 @@ void checkIssue( uint8_t instructionIndex )
         {
             rs[1].busy = true;
             rs[1].op = instructions[instructionIndex].op;
-            rs[1].
+            
             issuedSuccessfully = true;
         }
 
@@ -208,7 +209,7 @@ void checkIssue( uint8_t instructionIndex )
 
         if( issuedSuccessfully )
         {
-            instructionPointer++; // move instruction queue to next instruction
+            instructionPosition++; // move instruction queue to next instruction
         }
     }
     // check RS4-RS5 (MUL/DIV R.S.)
@@ -227,7 +228,7 @@ void checkIssue( uint8_t instructionIndex )
 
         if( issuedSuccessfully )
         {
-            instructionPointer++; // move instruction queue to next instruction
+            instructionPosition++; // move instruction queue to next instruction
         }
     }
     // error: incorrect opcode
