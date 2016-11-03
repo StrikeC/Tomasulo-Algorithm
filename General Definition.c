@@ -26,8 +26,8 @@ int main() {
 	int cycle = 1;
 	while (cycle <= cycleReqst){
 		issue();
-		dispatch();
-		execute();
+		dispatch(cycle);
+		execute(cycle);
 		broadcast();
 		//test if all instructions are issued with all RS are freed
 		if (finish() = 1) break;
