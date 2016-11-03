@@ -21,3 +21,18 @@ int rf[8][2];
 int rs[5][11];
 int addUnitOccupy = 0;
 int mulUnitOccupy = 0;
+
+int main() {
+	int cycle = 1;
+	while (cycle <= cycleReqst){
+		issue();
+		dispatch();
+		execute();
+		broadcast();
+		//test if all instructions are issued with all RS are freed
+		if (finish() = 1) break;
+		
+		cycle++;
+	}
+	//Result display code here ~later~
+}
