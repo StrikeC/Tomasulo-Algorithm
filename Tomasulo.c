@@ -67,7 +67,7 @@ int32_t registerFile[8]; // 8-entry array of integers used as register file
 int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (-1 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
 struct instruction instructions[10]; // 10-entry array of instruction records
-struct reservationStation rs[5]; // 5-entry array of reservation stations (RS1-RS5)
+struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
 
