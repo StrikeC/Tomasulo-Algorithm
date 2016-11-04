@@ -223,31 +223,6 @@ void checkIssue( uint8_t instructionIndex )
                 issuedSuccessfully = true;
             }
         }
-        /*
-        if( !rs[1].busy )
-        {
-            rs[1].busy = true;
-            rs[1].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[2].busy && !issuedSuccessfully )
-        {
-            rs[2].busy = true;
-            rs[2].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[3].busy && !issuedSuccessfully )
-        {
-            rs[3].busy = true;
-            rs[3].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-        */
 
         if( issuedSuccessfully )
         {
@@ -290,23 +265,6 @@ void checkIssue( uint8_t instructionIndex )
                 issuedSuccessfully = true;
             }
         }
-        /*
-        if( !rs[4].busy )
-        {
-            rs[4].busy = true;
-            rs[4].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[5].busy && !issuedSuccessfully )
-        {
-            rs[5].busy = true;
-            rs[5].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-        */
 
         if( issuedSuccessfully )
         {
