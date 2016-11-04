@@ -174,9 +174,9 @@ int main( int argc, char * argv[] )
             #ifdef DEBUG_MODE
             printf( "--CYCLE %u--\n", i );
             #endif
-			checkIssue( instructionPosition );
-			checkDispatch();
-			checkBroadcast();
+	    checkIssue( instructionPosition );
+	    checkDispatch();
+	    checkBroadcast();
         }
 		
 		// DISPLAY/PRINT SIMULATOR OUTPUT RESULTS HERE
@@ -325,9 +325,9 @@ void checkDispatch()
             }
             else
             {
-				#ifdef DEBUG_MODE
+		#ifdef DEBUG_MODE
                 printf( "RS1 cannot dispatch before capture\n" );
-				#endif
+		#endif
             }
         }
     }
@@ -361,9 +361,9 @@ void checkDispatch()
             }
             else
             {
-				#ifdef DEBUG_MODE
+		#ifdef DEBUG_MODE
                 printf( "RS2 cannot dispatch before capture\n" );
-				#endif
+		#endif
             }
         }
     }
@@ -397,9 +397,9 @@ void checkDispatch()
             }
             else
             {
-				#ifdef DEBUG_MODE
+		#ifdef DEBUG_MODE
                 printf( "RS3 cannot dispatch before capture\n" );
-				#endif
+		#endif
             }
         }
     }
@@ -433,9 +433,9 @@ void checkDispatch()
             }
             else
             {
-				#ifdef DEBUG_MODE
+		#ifdef DEBUG_MODE
                 printf( "RS4 cannot dispatch before capture\n" );
-				#endif
+		#endif
             }
         }
     }
@@ -469,9 +469,9 @@ void checkDispatch()
             }
             else
             {
-				#ifdef DEBUG_MODE
+		#ifdef DEBUG_MODE
                 printf( "RS5 cannot dispatch before capture\n" );
-				#endif
+		#endif
             }
         }
     }
