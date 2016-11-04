@@ -174,12 +174,12 @@ int main( int argc, char * argv[] )
             #ifdef DEBUG_MODE
             printf( "--CYCLE %u--\n", i );
             #endif
-	    checkIssue( instructionPosition );
-	    checkDispatch();
-	    checkBroadcast();
+            checkIssue( instructionPosition );
+            checkDispatch();
+            checkBroadcast();
         }
-		
-		// DISPLAY/PRINT SIMULATOR OUTPUT RESULTS HERE
+        
+        // DISPLAY/PRINT SIMULATOR OUTPUT RESULTS HERE
     }
     return 0;
 }
@@ -325,9 +325,9 @@ void checkDispatch()
             }
             else
             {
-		#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 printf( "RS1 cannot dispatch before capture\n" );
-		#endif
+                #endif
             }
         }
     }
@@ -361,9 +361,9 @@ void checkDispatch()
             }
             else
             {
-		#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 printf( "RS2 cannot dispatch before capture\n" );
-		#endif
+                #endif
             }
         }
     }
@@ -397,9 +397,9 @@ void checkDispatch()
             }
             else
             {
-		#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 printf( "RS3 cannot dispatch before capture\n" );
-		#endif
+                #endif
             }
         }
     }
@@ -433,9 +433,9 @@ void checkDispatch()
             }
             else
             {
-		#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 printf( "RS4 cannot dispatch before capture\n" );
-		#endif
+                #endif
             }
         }
     }
@@ -469,9 +469,9 @@ void checkDispatch()
             }
             else
             {
-		#ifdef DEBUG_MODE
+                #ifdef DEBUG_MODE
                 printf( "RS5 cannot dispatch before capture\n" );
-		#endif
+                #endif
             }
         }
     }
@@ -488,68 +488,68 @@ void checkBroadcast()
     bool broadcasting = false;
     if( mulUnit.busy )
     {
-		if( mulUnit.cyclesRemaining > 0 )
-		{
-			mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
-		}
+        if( mulUnit.cyclesRemaining > 0 )
+        {
+            mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
+        }
         if( mulUnit.cyclesRemaining == 0 ) // broadcast MUL unit result
         {
             broadcasting = true;
-			
-			for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
-			{
-				if( rs[i].qj == registerAllocationTable[mulUnit.dst] )
-				{
-					rs[i].qj = 0;
-					rs[i].vj = mulUnit.result;
-				}
-				
-				if( rs[i].qk == registerAllocationTable[mulUnit.dst] )
-				{
-					rs[i].qk = 0;
-					rs[i].vk = mulUnit.result;
-				}
-			}
-			
-			// clear matching RAT tags and update RF values
-			registerAllocationTable[mulUnit.dst] = -1; // clear RAT
-			registerFile[mulUnit.dst] = mulUnit.result; // update RF
+            
+            for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
+            {
+                if( rs[i].qj == registerAllocationTable[mulUnit.dst] )
+                {
+                    rs[i].qj = 0;
+                    rs[i].vj = mulUnit.result;
+                }
+                
+                if( rs[i].qk == registerAllocationTable[mulUnit.dst] )
+                {
+                    rs[i].qk = 0;
+                    rs[i].vk = mulUnit.result;
+                }
+            }
+            
+            // clear matching RAT tags and update RF values
+            registerAllocationTable[mulUnit.dst] = -1; // clear RAT
+            registerFile[mulUnit.dst] = mulUnit.result; // update RF
         }
     }    
 
     if( addUnit.busy ) // broadcast ADD unit result if MUL unit isn't broadcasting
     {
-		if( addUnit.cyclesRemaining > 0 )
-		{
-			addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
-		}
-		
-		if( addUnit.cyclesRemaining == 0 && !broadcasting ) // broadcast ADD unit result
-		{
-			for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
-			{
-				if( rs[i].qj == registerAllocationTable[addUnit.dst] )
-				{
-					rs[i].qj = 0;
-					rs[i].vj = addUnit.result;
-				}
-				
-				if( rs[i].qk == registerAllocationTable[addUnit.dst] )
-				{
-					rs[i].qk = 0;
-					rs[i].vk = addUnit.result;
-				}
-			}
-			
-			// clear matching RAT tags and update RF values
-			registerAllocationTable[addUnit.dst] = -1; // clear RAT
-			registerFile[addUnit.dst] = addUnit.result; // update RF
-		}
-		else
-		{
-			#ifdef DEBUG_MODE
-			printf("ADD Unit can't broadcast this cycle because MUL Unit is busy broadcasting...\n")
-			#endif
-		}
+        if( addUnit.cyclesRemaining > 0 )
+        {
+            addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
+        }
+        
+        if( addUnit.cyclesRemaining == 0 && !broadcasting ) // broadcast ADD unit result
+        {
+            for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
+            {
+                if( rs[i].qj == registerAllocationTable[addUnit.dst] )
+                {
+                    rs[i].qj = 0;
+                    rs[i].vj = addUnit.result;
+                }
+                
+                if( rs[i].qk == registerAllocationTable[addUnit.dst] )
+                {
+                    rs[i].qk = 0;
+                    rs[i].vk = addUnit.result;
+                }
+            }
+            
+            // clear matching RAT tags and update RF values
+            registerAllocationTable[addUnit.dst] = -1; // clear RAT
+            registerFile[addUnit.dst] = addUnit.result; // update RF
+        }
+        else
+        {
+            #ifdef DEBUG_MODE
+            printf("ADD Unit can't broadcast this cycle because MUL Unit is busy broadcasting...\n")
+            #endif
+        }
     }
 }
