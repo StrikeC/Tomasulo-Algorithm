@@ -1,7 +1,7 @@
 /*
  *  ECE 474/774: Computer Architecture Project 1
- *  Author(s): Jonathon Edstrom
- *  Date: 10/29/16 - 10/31/16
+ *  Author(s): Jonathon Edstrom & Tianqi Chen
+ *  Date: 10/29/16 - 11/7/16
  *
  *  Compile: gcc Tomasulo.c -o tomasulo -std=c99
  */
@@ -39,6 +39,8 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
+    uint8_t dst;
+    uint8_t insIndex; // instructions index for avoiding WAW when broadcast
     bool disp;
 };
 
@@ -74,7 +76,7 @@ struct integerMultiplyUnit mulUnit;
 // Function Declarations
 void checkIssue( uint8_t instructionIndex );
 void checkDispatch();
-void checkCapture();
+void checkBroadcast();
 
 /*
  *  Function: main
@@ -85,7 +87,7 @@ void checkCapture();
  */
 int main( int argc, char * argv[] )
 {
-    printf( "--- Tomasulo's Algorithm Simulator - Jonathon Edstrom ---\n\n" ); 
+    printf( "--- Tomasulo's Algorithm Simulator - Jonathon Edstrom & Tianqi Chen ---\n\n" ); 
 
     if( argc != 2 ) // argc should be 2 for correct execution
     {
@@ -172,7 +174,12 @@ int main( int argc, char * argv[] )
             #ifdef DEBUG_MODE
             printf( "--CYCLE %u--\n", i );
             #endif
+			checkIssue( instructionPosition );
+			checkDispatch();
+			checkBroadcast();
         }
+		
+		// DISPLAY/PRINT SIMULATOR OUTPUT RESULTS HERE
     }
     return 0;
 }
@@ -189,28 +196,39 @@ void checkIssue( uint8_t instructionIndex )
     if( instructions[instructionIndex].op == 0 || instructions[instructionIndex].op == 1 )
     {
         bool issuedSuccessfully = false;
-        if( !rs[1].busy )
+        for ( uint8_t i = 1; i <= 3; i++) 
         {
-            rs[1].busy = true;
-            rs[1].op = instructions[instructionIndex].op;
+            if( !rs[i].busy && !issuedSuccessfully )
+            {
+                rs[i].busy = true;
+                rs[i].op = instructions[instructionIndex].op;
+                rs[i].dst = instructions[instructionIndex].dst;
+                rs[i].insIndex = instructionIndex;
+                
+                registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
+                
+                // source one value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                }
+                
+                // source two value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                }
             
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[2].busy && !issuedSuccessfully )
-        {
-            rs[2].busy = true;
-            rs[2].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[3].busy && !issuedSuccessfully )
-        {
-            rs[3].busy = true;
-            rs[3].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
+                issuedSuccessfully = true;
+            }
         }
 
         if( issuedSuccessfully )
@@ -222,20 +240,39 @@ void checkIssue( uint8_t instructionIndex )
     else if( instructions[instructionIndex].op == 2 || instructions[instructionIndex].op == 3 )
     {
         bool issuedSuccessfully = false;
-        if( !rs[4].busy )
+        for ( uint8_t i = 4; i <= 5; i++) 
         {
-            rs[4].busy = true;
-            rs[4].op = instructions[instructionIndex].op;
+            if( !rs[i].busy && !issuedSuccessfully )
+            {
+                rs[i].busy = true;
+                rs[i].op = instructions[instructionIndex].op;
+                rs[i].dst = instructions[instructionIndex].dst;
+                rs[i].insIndex = instructionIndex;
+                
+                registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
+                
+                // source one value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                }
+                
+                // source two value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                }
             
-            issuedSuccessfully = true;
-        }
-
-        if( !rs[5].busy && !issuedSuccessfully )
-        {
-            rs[5].busy = true;
-            rs[5].op = instructions[instructionIndex].op;
-            
-            issuedSuccessfully = true;
+                issuedSuccessfully = true;
+            }
         }
 
         if( issuedSuccessfully )
@@ -246,7 +283,7 @@ void checkIssue( uint8_t instructionIndex )
     // error: incorrect opcode
     else
     {
-        printf( "Incorrect instruction opcode found while issuing instruction\n" );
+        printf( "Incorrect instruction opcode: '%u' found while issuing instruction. Now exiting.\n", instructions[instructionIndex].op );
         exit(EXIT_FAILURE);
     }
 }
@@ -259,7 +296,7 @@ void checkIssue( uint8_t instructionIndex )
  */
 void checkDispatch()
 {
-    if( rs[1].busy && rs[1].disp )
+    if( rs[1].busy && !rs[1].disp )
     {
         if( addUnit.busy )
         {
@@ -269,11 +306,33 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[1].qj == 0 && rs[1].qk == 0 ) // check if tags have captured their values
+            {
+                rs[1].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[1].dst;
+                switch( rs[1].op )
+                {
+                    case 0:
+                        addUnit.result = rs[1].vj + rs[1].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[1].vj - rs[1].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+				#ifdef DEBUG_MODE
+                printf( "RS1 cannot dispatch before capture\n" );
+				#endif
+            }
         }
     }
 
-    if( rs[2].busy && rs[2].disp )
+    if( rs[2].busy && !rs[2].disp )
     {
         if( addUnit.busy )
         {
@@ -283,11 +342,33 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[2].qj == 0 && rs[2].qk == 0 ) // check if tags have captured their values
+            {
+                rs[2].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[2].dst;
+                switch( rs[2].op )
+                {
+                    case 0:
+                        addUnit.result = rs[2].vj + rs[2].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[2].vj - rs[2].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+				#ifdef DEBUG_MODE
+                printf( "RS2 cannot dispatch before capture\n" );
+				#endif
+            }
         }
     }
 
-    if( rs[3].busy && rs[3].disp )
+    if( rs[3].busy && !rs[3].disp )
     {
         if( addUnit.busy )
         {
@@ -297,11 +378,33 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[3].qj == 0 && rs[3].qk == 0 ) // check if tags have captured their values
+            {
+                rs[3].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[3].dst;
+                switch( rs[3].op )
+                {
+                    case 0:
+                        addUnit.result = rs[3].vj + rs[3].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[3].vj - rs[3].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+				#ifdef DEBUG_MODE
+                printf( "RS3 cannot dispatch before capture\n" );
+				#endif
+            }
         }
     }
 
-    if( rs[4].busy && rs[4].disp )
+    if( rs[4].busy && !rs[4].disp )
     {
         if( mulUnit.busy )
         {
@@ -311,11 +414,33 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[4].qj == 0 && rs[4].qk == 0 ) // check if tags have captured their values
+            {
+                rs[4].disp = true;
+                mulUnit.busy = true;
+                mulUnit.dst = rs[4].dst;
+                switch( rs[4].op )
+                {
+                    case 2:
+                        mulUnit.result = rs[4].vj * rs[4].vk;
+                        mulUnit.cyclesRemaining = DELAY_MUL;
+                        break;
+                    case 3:
+                        mulUnit.result = rs[4].vj / rs[4].vk;
+                        mulUnit.cyclesRemaining = DELAY_DIV;
+                        break;
+                }
+            }
+            else
+            {
+				#ifdef DEBUG_MODE
+                printf( "RS4 cannot dispatch before capture\n" );
+				#endif
+            }
         }
     }
 
-    if( rs[5].busy && rs[5].disp )
+    if( rs[5].busy && !rs[5].disp )
     {
         if( mulUnit.busy )
         {
@@ -325,31 +450,106 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[5].qj == 0 && rs[5].qk == 0 ) // check if tags have captured their values
+            {
+                rs[5].disp = true;
+                mulUnit.busy = true;
+                mulUnit.dst = rs[5].dst;
+                switch( rs[5].op )
+                {
+                    case 2:
+                        mulUnit.result = rs[5].vj * rs[5].vk;
+                        mulUnit.cyclesRemaining = DELAY_MUL;
+                        break;
+                    case 3:
+                        mulUnit.result = rs[5].vj / rs[5].vk;
+                        mulUnit.cyclesRemaining = DELAY_DIV;
+                        break;
+                }
+            }
+            else
+            {
+				#ifdef DEBUG_MODE
+                printf( "RS5 cannot dispatch before capture\n" );
+				#endif
+            }
         }
     }
 }
 
 /*
- *  Function: checkCapture
+ *  Function: checkBroadcast
  *  Parameters: None
  *  Returns: None
  *  Description: check if results of unit(s) are ready to broadcast/capture
  */
-void checkCapture()
+void checkBroadcast()
 {
     bool broadcasting = false;
     if( mulUnit.busy )
     {
-        mulUnit.cyclesRemaining--; // decrement cycles remaining
+		if( mulUnit.cyclesRemaining > 0 )
+		{
+			mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
+		}
         if( mulUnit.cyclesRemaining == 0 ) // broadcast MUL unit result
         {
             broadcasting = true;
+			
+			for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
+			{
+				if( rs[i].qj == registerAllocationTable[mulUnit.dst] )
+				{
+					rs[i].qj = 0;
+					rs[i].vj = mulUnit.result;
+				}
+				
+				if( rs[i].qk == registerAllocationTable[mulUnit.dst] )
+				{
+					rs[i].qk = 0;
+					rs[i].vk = mulUnit.result;
+				}
+			}
+			
+			// clear matching RAT tags and update RF values
+			registerAllocationTable[mulUnit.dst] = -1; // clear RAT
+			registerFile[mulUnit.dst] = mulUnit.result; // update RF
         }
     }    
 
-    if( addUnit.busy && !broadcasting ) // broadcast ADD unit result if MUL unit isn't broadcasting
+    if( addUnit.busy ) // broadcast ADD unit result if MUL unit isn't broadcasting
     {
-        
+		if( addUnit.cyclesRemaining > 0 )
+		{
+			addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
+		}
+		
+		if( addUnit.cyclesRemaining == 0 && !broadcasting ) // broadcast ADD unit result
+		{
+			for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
+			{
+				if( rs[i].qj == registerAllocationTable[addUnit.dst] )
+				{
+					rs[i].qj = 0;
+					rs[i].vj = addUnit.result;
+				}
+				
+				if( rs[i].qk == registerAllocationTable[addUnit.dst] )
+				{
+					rs[i].qk = 0;
+					rs[i].vk = addUnit.result;
+				}
+			}
+			
+			// clear matching RAT tags and update RF values
+			registerAllocationTable[addUnit.dst] = -1; // clear RAT
+			registerFile[addUnit.dst] = addUnit.result; // update RF
+		}
+		else
+		{
+			#ifdef DEBUG_MODE
+			printf("ADD Unit can't broadcast this cycle because MUL Unit is busy broadcasting...\n")
+			#endif
+		}
     }
 }
