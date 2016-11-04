@@ -200,6 +200,8 @@ void checkIssue( uint8_t instructionIndex )
                 rs[i].dst = instructions[instructionIndex].dst;
                 rs[i].insIndex = instructionIndex;
                 
+                registerAllocationTable[rs[i].dst - 1] = i; // update destination's RAT with RS index
+                
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
                 {
@@ -233,7 +235,7 @@ void checkIssue( uint8_t instructionIndex )
     else if( instructions[instructionIndex].op == 2 || instructions[instructionIndex].op == 3 )
     {
         bool issuedSuccessfully = false;
-        for ( uint8_t i = 1; i <= 3; i++) 
+        for ( uint8_t i = 4; i <= 5; i++) 
         {
             if( !rs[i].busy && !issuedSuccessfully )
             {
@@ -241,6 +243,8 @@ void checkIssue( uint8_t instructionIndex )
                 rs[i].op = instructions[instructionIndex].op;
                 rs[i].dst = instructions[instructionIndex].dst;
                 rs[i].insIndex = instructionIndex;
+                
+                registerAllocationTable[rs[i].dst - 1] = i; // update destination's RAT with RS index
                 
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
