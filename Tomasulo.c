@@ -287,7 +287,7 @@ void checkIssue( uint8_t instructionIndex )
  */
 void checkDispatch()
 {
-    if( rs[1].busy && rs[1].disp )
+    if( rs[1].busy && !rs[1].disp )
     {
         if( addUnit.busy )
         {
@@ -297,7 +297,27 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[1].qj == 0 && rs[1].qk ==0 ) // check if all source have captured their values
+            {
+                rs[1].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[1].dst;
+                switch( rs[1].op )
+                {
+                    case 0:
+                        addUnit.result = rs[1].vj + rs[1].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[1].vj - rs[1].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+                printf( "RS1 cannot dispatch before capture\n" );
+            }
         }
     }
 
@@ -311,7 +331,27 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[2].qj == 0 && rs[2].qk ==0 )
+            {
+                rs[2].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[2].dst;
+                switch( rs[2].op )
+                {
+                    case 0:
+                        addUnit.result = rs[2].vj + rs[2].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[2].vj - rs[2].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+                printf( "RS2 cannot dispatch before capture\n" );
+            }
         }
     }
 
@@ -325,7 +365,27 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[3].qj == 0 && rs[3].qk ==0 )
+            {
+                rs[3].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[3].dst;
+                switch( rs[3].op )
+                {
+                    case 0:
+                        addUnit.result = rs[3].vj + rs[3].vk;
+                        addUnit.cyclesRemaining = DELAY_ADD;
+                        break;
+                    case 1:
+                        addUnit.result = rs[3].vj - rs[3].vk;
+                        addUnit.cyclesRemaining = DELAY_SUB;
+                        break;
+                }
+            }
+            else
+            {
+                printf( "RS3 cannot dispatch before capture\n" );
+            }
         }
     }
 
@@ -339,7 +399,27 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[4].qj == 0 && rs[4].qk ==0 )
+            {
+                rs[4].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[4].dst;
+                switch( rs[4].op )
+                {
+                    case 2:
+                        addUnit.result = rs[4].vj * rs[4].vk;
+                        addUnit.cyclesRemaining = DELAY_MUL;
+                        break;
+                    case 3:
+                        addUnit.result = rs[4].vj / rs[4].vk;
+                        addUnit.cyclesRemaining = DELAY_DIV;
+                        break;
+                }
+            }
+            else
+            {
+                printf( "RS4 cannot dispatch before capture\n" );
+            }
         }
     }
 
@@ -353,7 +433,27 @@ void checkDispatch()
         }
         else
         {
-
+            if( rs[5].qj == 0 && rs[5].qk ==0 )
+            {
+                rs[5].disp = true;
+                addUnit.busy = true;
+                addUnit.dst = rs[5].dst;
+                switch( rs[5].op )
+                {
+                    case 2:
+                        addUnit.result = rs[5].vj * rs[5].vk;
+                        addUnit.cyclesRemaining = DELAY_MUL;
+                        break;
+                    case 3:
+                        addUnit.result = rs[5].vj / rs[5].vk;
+                        addUnit.cyclesRemaining = DELAY_DIV;
+                        break;
+                }
+            }
+            else
+            {
+                printf( "RS5 cannot dispatch before capture\n" );
+            }
         }
     }
 }
