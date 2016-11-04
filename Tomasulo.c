@@ -39,6 +39,8 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
+    uint8_t dst;
+    uint8_t insIndex; // instructions index for avoiding WAW when broadcast
     bool disp;
 };
 
@@ -189,6 +191,39 @@ void checkIssue( uint8_t instructionIndex )
     if( instructions[instructionIndex].op == 0 || instructions[instructionIndex].op == 1 )
     {
         bool issuedSuccessfully = false;
+        for ( uint8_t i = 1; i <= 3; i++) 
+        {
+            if( !rs[i].busy && !issuedSuccessfully )
+            {
+                rs[i].busy = true;
+                rs[i].op = instructions[instructionIndex].op;
+                rs[i].dst = instructions[instructionIndex].dst;
+                rs[i].insIndex = instructionIndex;
+                
+                // source one value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne - 1];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne - 1];
+                }
+                
+                // source two value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne - 1];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne - 1];
+                }
+            
+                issuedSuccessfully = true;
+            }
+        }
+        /*
         if( !rs[1].busy )
         {
             rs[1].busy = true;
@@ -212,6 +247,7 @@ void checkIssue( uint8_t instructionIndex )
             
             issuedSuccessfully = true;
         }
+        */
 
         if( issuedSuccessfully )
         {
@@ -222,6 +258,39 @@ void checkIssue( uint8_t instructionIndex )
     else if( instructions[instructionIndex].op == 2 || instructions[instructionIndex].op == 3 )
     {
         bool issuedSuccessfully = false;
+        for ( uint8_t i = 1; i <= 3; i++) 
+        {
+            if( !rs[i].busy && !issuedSuccessfully )
+            {
+                rs[i].busy = true;
+                rs[i].op = instructions[instructionIndex].op;
+                rs[i].dst = instructions[instructionIndex].dst;
+                rs[i].insIndex = instructionIndex;
+                
+                // source one value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne - 1];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne - 1];
+                }
+                
+                // source two value/name transmit
+                if( registerAllocationTable[instructions[instructionIndex].srcOne - 1] == -1)
+                {
+                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne - 1];
+                }
+                else
+                {
+                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne - 1];
+                }
+            
+                issuedSuccessfully = true;
+            }
+        }
+        /*
         if( !rs[4].busy )
         {
             rs[4].busy = true;
@@ -237,6 +306,7 @@ void checkIssue( uint8_t instructionIndex )
             
             issuedSuccessfully = true;
         }
+        */
 
         if( issuedSuccessfully )
         {
