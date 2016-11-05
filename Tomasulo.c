@@ -40,7 +40,7 @@ struct reservationStation
     uint8_t qj;
     uint8_t qk;
     uint8_t dst;
-    uint8_t insIndex; // instructions index for avoiding WAW when broadcast
+    //uint8_t insIndex; // instructions index for avoiding WAW when broadcast
     bool disp;
 };
 
@@ -203,7 +203,7 @@ void checkIssue( uint8_t instructionIndex )
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
                 rs[i].dst = instructions[instructionIndex].dst;
-                rs[i].insIndex = instructionIndex;
+                //rs[i].insIndex = instructionIndex;
                 
                 registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
                 
@@ -247,7 +247,7 @@ void checkIssue( uint8_t instructionIndex )
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
                 rs[i].dst = instructions[instructionIndex].dst;
-                rs[i].insIndex = instructionIndex;
+                //rs[i].insIndex = instructionIndex;
                 
                 registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
                 
