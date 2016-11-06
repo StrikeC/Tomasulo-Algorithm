@@ -39,8 +39,6 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
-    uint8_t dst;
-    //uint8_t insIndex; // instructions index for avoiding WAW when broadcast
     bool disp;
 };
 
@@ -49,7 +47,7 @@ struct integerAddUnit
     bool busy;
     int8_t cyclesRemaining;
     int32_t result;
-    uint8_t dst;
+    uint8_t dst; // indicates the reservation station where instructions come from
     bool broadcast;
 };
 
@@ -58,7 +56,7 @@ struct integerMultiplyUnit
     bool busy;
     int8_t cyclesRemaining;
     int32_t result;
-    uint8_t dst;
+    uint8_t dst; // indicates the reservation station where instructions come from
     bool broadcast;
 };
 
@@ -202,10 +200,7 @@ void checkIssue( uint8_t instructionIndex )
             {
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
-                rs[i].dst = instructions[instructionIndex].dst;
-                //rs[i].insIndex = instructionIndex;
-                
-                registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
+                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
                 
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
@@ -246,10 +241,7 @@ void checkIssue( uint8_t instructionIndex )
             {
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
-                rs[i].dst = instructions[instructionIndex].dst;
-                //rs[i].insIndex = instructionIndex;
-                
-                registerAllocationTable[rs[i].dst] = i; // update destination's RAT with RS index
+                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
                 
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
@@ -310,7 +302,7 @@ void checkDispatch()
             {
                 rs[1].disp = true;
                 addUnit.busy = true;
-                addUnit.dst = rs[1].dst;
+                addUnit.dst = 1;
                 switch( rs[1].op )
                 {
                     case 0:
@@ -346,7 +338,7 @@ void checkDispatch()
             {
                 rs[2].disp = true;
                 addUnit.busy = true;
-                addUnit.dst = rs[2].dst;
+                addUnit.dst = 2;
                 switch( rs[2].op )
                 {
                     case 0:
@@ -382,7 +374,7 @@ void checkDispatch()
             {
                 rs[3].disp = true;
                 addUnit.busy = true;
-                addUnit.dst = rs[3].dst;
+                addUnit.dst = 3;
                 switch( rs[3].op )
                 {
                     case 0:
@@ -418,7 +410,7 @@ void checkDispatch()
             {
                 rs[4].disp = true;
                 mulUnit.busy = true;
-                mulUnit.dst = rs[4].dst;
+                mulUnit.dst = 4;
                 switch( rs[4].op )
                 {
                     case 2:
@@ -454,7 +446,7 @@ void checkDispatch()
             {
                 rs[5].disp = true;
                 mulUnit.busy = true;
-                mulUnit.dst = rs[5].dst;
+                mulUnit.dst = 5;
                 switch( rs[5].op )
                 {
                     case 2:
@@ -498,13 +490,13 @@ void checkBroadcast()
             
             for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
             {
-                if( rs[i].qj == registerAllocationTable[mulUnit.dst] )
+                if( rs[i].qj == mulUnit.dst )
                 {
                     rs[i].qj = 0;
                     rs[i].vj = mulUnit.result;
                 }
                 
-                if( rs[i].qk == registerAllocationTable[mulUnit.dst] )
+                if( rs[i].qk == mulUnit.dst )
                 {
                     rs[i].qk = 0;
                     rs[i].vk = mulUnit.result;
@@ -512,8 +504,14 @@ void checkBroadcast()
             }
             
             // clear matching RAT tags and update RF values
-            registerAllocationTable[mulUnit.dst] = -1; // clear RAT
-            registerFile[mulUnit.dst] = mulUnit.result; // update RF
+            for( uint8_t i = 0; i < 8; i++ )
+            {
+                if( registerAllocationTable[i] == mulUnit.dst )
+                {
+                    registerAllocationTable[i] = -1;
+                    registerFile[i] = mulUnit.result;
+                }
+            }
         }
     }    
 
@@ -528,13 +526,13 @@ void checkBroadcast()
         {
             for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
             {
-                if( rs[i].qj == registerAllocationTable[addUnit.dst] )
+                if( rs[i].qj == addUnit.dst )
                 {
                     rs[i].qj = 0;
                     rs[i].vj = addUnit.result;
                 }
                 
-                if( rs[i].qk == registerAllocationTable[addUnit.dst] )
+                if( rs[i].qk == addUnit.dst )
                 {
                     rs[i].qk = 0;
                     rs[i].vk = addUnit.result;
@@ -542,8 +540,14 @@ void checkBroadcast()
             }
             
             // clear matching RAT tags and update RF values
-            registerAllocationTable[addUnit.dst] = -1; // clear RAT
-            registerFile[addUnit.dst] = addUnit.result; // update RF
+             for( uint8_t i = 0; i < 8; i++ )
+            {
+                if( registerAllocationTable[i] == mulUnit.dst )
+                {
+                    registerAllocationTable[i] = -1;
+                    registerFile[i] = mulUnit.result;
+                }
+            }
         }
         else
         {
