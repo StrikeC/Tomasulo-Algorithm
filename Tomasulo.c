@@ -63,18 +63,21 @@ struct integerMultiplyUnit
 // Global Declarations
 uint8_t numberOfInstructions;
 uint32_t numberOfCycles;
-int32_t registerFile[8]; // 8-entry array of integers used as register file
+int32_t registerFile[8] = {-1,-1,-1,-1,-1,-1,-1,-1}; // 8-entry array of integers used as register file
 int8_t registerAllocationTable[8] = {-1,-1,-1,-1,-1,-1,-1,-1}; // 8-entry array of integers used as RAT (-1 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
 struct instruction instructions[10]; // 10-entry array of instruction records
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
+char* strOpcodes = { "Add", "Sub", "Mul", "Div" };
+char* strTags = { "", "RS1", "RS2", "RS3", "RS4", "RS5" }; // index 0 SHOULD be the empty string!
 
 // Function Declarations
 void checkIssue( uint8_t instructionIndex );
 void checkDispatch();
 void checkBroadcast();
+void printSimulatorOutput();
 
 /*
  *  Function: main
@@ -177,7 +180,7 @@ int main( int argc, char * argv[] )
             checkBroadcast();
         }
         
-        // DISPLAY/PRINT SIMULATOR OUTPUT RESULTS HERE
+        printSimulatorOutput(); // Display output for reservation stations, RF, RAT and instruction queue
     }
     return 0;
 }
@@ -556,4 +559,48 @@ void checkBroadcast()
             #endif
         }
     }
+}
+
+void printSimulatorOutput()
+{
+	// print reservation station headers
+	printf( "\n\tBusy\tOp\tVj\tVk\tQj\tQk\Disp\n" );
+	
+	// print reservation station values
+	for( uint8_t i = 1; i <= 5; i++ )
+	{
+		printf( "RS%u\t%u\t%s\t%u\t%u\t%s\t%s\t%u\n", i, rs[i].busy, strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp )
+	}
+	
+	// print RF and RAT headers
+	printf( "\n\tRF\t\tRAT\n" );
+
+	// print RF and RAT values
+	for( uint8_t i = 0; i <= 7; i++ )
+	{
+		if( registerFile[i] != -1 )
+		{
+			printf( "%u:\t%d", i, registerFile[i] );
+		}
+		else
+		{
+			printf("%u:\t ");
+		}
+		
+		if( registerAllocationTable[i] != -1 )
+		{
+			printf("\t\t%u\n", strTags[registerAllocationTable[i]]);
+		}
+		else
+		{
+			printf("\t\t \n");
+		}
+	}
+	
+	// print instruction queue
+	printf( "\nInstruction Queue\n" );
+	for( uint8_t i = instructionPosition; i < numberOfInstructions; i++ )
+	{
+		printf( "%s R%u, R%u, R%u\n", strOpcodes[instructions[i].op], instructions[i].dst, instructions[i].srcOne, instructions[i].srcTwo );
+	}
 }
