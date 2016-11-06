@@ -564,7 +564,7 @@ void checkBroadcast()
 void printSimulatorOutput()
 {
 	// print reservation station headers
-	printf( "\n\tBusy\tOp\tVj\tVk\tQj\tQk\Disp\n" );
+	printf( "\n\tBusy\tOp\tVj\tVk\tQj\tQk\tDisp\n" );
 	
 	// print reservation station values
 	for( uint8_t i = 1; i <= 5; i++ )
