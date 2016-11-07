@@ -63,8 +63,8 @@ struct integerMultiplyUnit
 // Global Declarations
 uint8_t numberOfInstructions;
 uint32_t numberOfCycles;
-int32_t registerFile[8] = {-1,-1,-1,-1,-1,-1,-1,-1}; // 8-entry array of integers used as register file
-int8_t registerAllocationTable[8] = {-1,-1,-1,-1,-1,-1,-1,-1}; // 8-entry array of integers used as RAT (-1 means empty)
+int32_t registerFile[8]; // 8-entry array of integers used as register file
+int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (0 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
 struct instruction instructions[10]; // 10-entry array of instruction records
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
@@ -234,10 +234,9 @@ void checkIssue( uint8_t instructionIndex )
             {
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
-                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
-                
+
                 // source one value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == 0 )
                 {
                     rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
                 }
@@ -247,7 +246,7 @@ void checkIssue( uint8_t instructionIndex )
                 }
                 
                 // source two value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == 0 )
                 {
                     rs[i].vk = registerFile[instructions[instructionIndex].srcTwo];
                 }
@@ -255,6 +254,8 @@ void checkIssue( uint8_t instructionIndex )
                 {
                     rs[i].qk = registerAllocationTable[instructions[instructionIndex].srcTwo];
                 }
+
+                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
             
                 issuedSuccessfully = true;
             }
@@ -275,10 +276,9 @@ void checkIssue( uint8_t instructionIndex )
             {
                 rs[i].busy = true;
                 rs[i].op = instructions[instructionIndex].op;
-                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
-                
+
                 // source one value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcOne] == 0 )
                 {
                     rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
                 }
@@ -288,7 +288,7 @@ void checkIssue( uint8_t instructionIndex )
                 }
                 
                 // source two value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == 0 )
                 {
                     rs[i].vk = registerFile[instructions[instructionIndex].srcTwo];
                 }
@@ -296,6 +296,8 @@ void checkIssue( uint8_t instructionIndex )
                 {
                     rs[i].qk = registerAllocationTable[instructions[instructionIndex].srcTwo];
                 }
+
+                registerAllocationTable[instructions[instructionIndex].dst] = i; // update destination's RAT with RS index
             
                 issuedSuccessfully = true;
             }
@@ -538,7 +540,7 @@ void checkBroadcast()
             {
                 if( registerAllocationTable[i] == mulUnit.dst )
                 {
-                    registerAllocationTable[i] = -1;
+                    registerAllocationTable[i] = 0;
                     registerFile[i] = mulUnit.result;
                 }
             }
@@ -580,7 +582,7 @@ void checkBroadcast()
             {
                 if( registerAllocationTable[i] == addUnit.dst )
                 {
-                    registerAllocationTable[i] = -1;
+                    registerAllocationTable[i] = 0;
                     registerFile[i] = addUnit.result;
                 }
             }
@@ -629,7 +631,7 @@ void printSimulatorOutput()
 
             if( rs[i].qj == 0 ) // if tag is empty print the value of vj
             {
-                printf( "%u\t", rs[i].vj );
+                printf( "%d\t", rs[i].vj );
             }
             else
             {
@@ -638,7 +640,7 @@ void printSimulatorOutput()
 
             if( rs[i].qk == 0 ) // if tag is empty print the value of vk
             {
-                printf( "%u\t", rs[i].vk );
+                printf( "%d\t", rs[i].vk );
             }
             else
             {
@@ -659,16 +661,9 @@ void printSimulatorOutput()
 	// print RF and RAT values
 	for( uint8_t i = 0; i <= 7; i++ )
 	{
-		if( registerFile[i] != -1 )
-		{
-			printf( "%u:\t%d", i, registerFile[i] );
-		}
-		else
-		{
-			printf( "%u:\t ", i );
-		}
+		printf( "%u:\t%d", i, registerFile[i] );
 		
-		if( registerAllocationTable[i] != -1 )
+		if( registerAllocationTable[i] != 0 )
 		{
 			printf( "\t\t%s\n", strTags[registerAllocationTable[i]] );
 		}
