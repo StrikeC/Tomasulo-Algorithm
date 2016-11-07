@@ -70,8 +70,8 @@ struct instruction instructions[10]; // 10-entry array of instruction records
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
-char* strOpcodes = { "Add", "Sub", "Mul", "Div" };
-char* strTags = { "", "RS1", "RS2", "RS3", "RS4", "RS5" }; // index 0 SHOULD be the empty string!
+char* strOpcodes[4] = { "Add", "Sub", "Mul", "Div" };
+char* strTags[6] = { "", "RS1", "RS2", "RS3", "RS4", "RS5" }; // index 0 SHOULD be the empty string!
 
 // Function Declarations
 void checkIssue( uint8_t instructionIndex );
@@ -175,8 +175,8 @@ int main( int argc, char * argv[] )
             #ifdef DEBUG_MODE
             printf( "--CYCLE %u--\n", i );
             #endif
-            checkIssue( instructionPosition );
             checkDispatch();
+            checkIssue( instructionPosition );
             checkBroadcast();
         }
         
@@ -216,13 +216,13 @@ void checkIssue( uint8_t instructionIndex )
                 }
                 
                 // source two value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == -1 )
                 {
-                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                    rs[i].vk = registerFile[instructions[instructionIndex].srcTwo];
                 }
                 else
                 {
-                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                    rs[i].qk = registerAllocationTable[instructions[instructionIndex].srcTwo];
                 }
             
                 issuedSuccessfully = true;
@@ -257,13 +257,13 @@ void checkIssue( uint8_t instructionIndex )
                 }
                 
                 // source two value/name transmit
-                if( registerAllocationTable[instructions[instructionIndex].srcOne] == -1 )
+                if( registerAllocationTable[instructions[instructionIndex].srcTwo] == -1 )
                 {
-                    rs[i].vj = registerFile[instructions[instructionIndex].srcOne];
+                    rs[i].vk = registerFile[instructions[instructionIndex].srcTwo];
                 }
                 else
                 {
-                    rs[i].qj = registerAllocationTable[instructions[instructionIndex].srcOne];
+                    rs[i].qk = registerAllocationTable[instructions[instructionIndex].srcTwo];
                 }
             
                 issuedSuccessfully = true;
@@ -516,7 +516,7 @@ void checkBroadcast()
                 }
             }
 			
-	    // reset mulUnit and clear respected reservation station
+	    // reset mulUnit and clear respective reservation station
 	    mulUnit.busy = false;
 	    rs[mulUnit.dst].busy = false;
 	    rs[mulUnit.dst].disp = false;
@@ -558,7 +558,7 @@ void checkBroadcast()
                 }
             }
 			
-	    // reset addUnit and clear respected reservation station
+	    // reset addUnit and clear respective reservation station
 	    addUnit.busy = false;
 	    rs[addUnit.dst].busy = false;
 	    rs[addUnit.dst].disp = false;
@@ -566,9 +566,12 @@ void checkBroadcast()
         }
         else
         {
-            #ifdef DEBUG_MODE
-            printf("ADD Unit can't broadcast this cycle because MUL Unit is busy broadcasting...\n")
-            #endif
+            if( broadcasting )
+            {
+                #ifdef DEBUG_MODE
+                printf( "ADD Unit can't broadcast this cycle because MUL Unit is busy broadcasting...\n" );
+                #endif
+            }
         }
     }
 }
@@ -581,7 +584,7 @@ void printSimulatorOutput()
 	// print reservation station values
 	for( uint8_t i = 1; i <= 5; i++ )
 	{
-		printf( "RS%u\t%u\t%s\t%u\t%u\t%s\t%s\t%u\n", i, rs[i].busy, strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp )
+		printf( "RS%u\t%u\t%s\t%u\t%u\t%s\t%s\t%u\n", i, rs[i].busy, strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp );
 	}
 	
 	// print RF and RAT headers
@@ -601,7 +604,7 @@ void printSimulatorOutput()
 		
 		if( registerAllocationTable[i] != -1 )
 		{
-			printf("\t\t%u\n", strTags[registerAllocationTable[i]]);
+			printf("\t\t%s\n", strTags[registerAllocationTable[i]]);
 		}
 		else
 		{
