@@ -78,6 +78,7 @@ void checkIssue( uint8_t instructionIndex );
 void checkDispatch();
 void checkBroadcast();
 void printSimulatorOutput();
+void printUnitOutputs();
 
 /*
  *  Function: main
@@ -88,7 +89,7 @@ void printSimulatorOutput();
  */
 int main( int argc, char * argv[] )
 {
-    printf( "--- Tomasulo's Algorithm Simulator - Jonathon Edstrom & Tianqi Chen ---\n\n" ); 
+    printf( "\n--- Tomasulo's Algorithm Simulator - Jonathon Edstrom & Tianqi Chen ---\n" ); 
 
     if( argc != 2 ) // argc should be 2 for correct execution
     {
@@ -119,7 +120,7 @@ int main( int argc, char * argv[] )
             }
             else if( line_number == 2 ) // number of cycles of simulation line
             {
-                numberOfCycles = line_buffer[0] - ASCII_OFFSET;
+                numberOfCycles = atoi( line_buffer );
                 #ifdef DEBUG_MODE
                 printf( "Number of Simulation Cycles: %u\n\n", numberOfCycles );
                 #endif
@@ -173,15 +174,39 @@ int main( int argc, char * argv[] )
         for( uint16_t i = 1; i <= numberOfCycles; i++ )
         {
             #ifdef DEBUG_MODE
-            printf( "--CYCLE %u--\n", i );
+            printf( "---CYCLE %u---\n", i );
+            printf( "1. PRE-DISPATCH:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
             #endif
             checkDispatch();
+            #ifdef DEBUG_MODE
+            printf( "2. PRE-ISSUE/POST-DISPATCH:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
             checkIssue( instructionPosition );
+            #ifdef DEBUG_MODE
+            printf( "3. PRE-BROADCAST/POST-ISSUE:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
             checkBroadcast();
+            #ifdef DEBUG_MODE
+            printf( "4. POST-BROADCAST:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
+            
         }
         
         printSimulatorOutput(); // Display output for reservation stations, RF, RAT and instruction queue
     }
+    printf( "\n" );
     return 0;
 }
 
@@ -193,6 +218,12 @@ int main( int argc, char * argv[] )
  */
 void checkIssue( uint8_t instructionIndex )
 {
+    // return if no more instructions to issue
+    if( instructionIndex > numberOfInstructions - 1 )
+    {
+        return;
+    }
+
     // check RS1-RS3 (ADD/SUB R.S.)
     if( instructions[instructionIndex].op == 0 || instructions[instructionIndex].op == 1 )
     {
@@ -483,10 +514,6 @@ void checkBroadcast()
     bool broadcasting = false;
     if( mulUnit.busy )
     {
-        if( mulUnit.cyclesRemaining > 0 )
-        {
-            mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
-        }
         if( mulUnit.cyclesRemaining == 0 ) // broadcast MUL unit result
         {
             broadcasting = true;
@@ -516,21 +543,21 @@ void checkBroadcast()
                 }
             }
 			
-	    // reset mulUnit and clear respective reservation station
-	    mulUnit.busy = false;
-	    rs[mulUnit.dst].busy = false;
-	    rs[mulUnit.dst].disp = false;
-	    rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
+	        // reset mulUnit and clear respective reservation station
+	        mulUnit.busy = false;
+	        rs[mulUnit.dst].busy = false;
+	        rs[mulUnit.dst].disp = false;
+	        rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
+        }
+
+        if( mulUnit.cyclesRemaining > 0 )
+        {
+            mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
         }
     }    
 
     if( addUnit.busy ) // broadcast ADD unit result if MUL unit isn't broadcasting
-    {
-        if( addUnit.cyclesRemaining > 0 )
-        {
-            addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
-        }
-        
+    {   
         if( addUnit.cyclesRemaining == 0 && !broadcasting ) // broadcast ADD unit result
         {
             for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
@@ -549,20 +576,20 @@ void checkBroadcast()
             }
             
             // clear matching RAT tags and update RF values
-             for( uint8_t i = 0; i < 8; i++ )
+            for( uint8_t i = 0; i < 8; i++ )
             {
-                if( registerAllocationTable[i] == mulUnit.dst )
+                if( registerAllocationTable[i] == addUnit.dst )
                 {
                     registerAllocationTable[i] = -1;
-                    registerFile[i] = mulUnit.result;
+                    registerFile[i] = addUnit.result;
                 }
             }
 			
-	    // reset addUnit and clear respective reservation station
-	    addUnit.busy = false;
-	    rs[addUnit.dst].busy = false;
-	    rs[addUnit.dst].disp = false;
-	    rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
+	        // reset addUnit and clear respective reservation station
+	        addUnit.busy = false;
+	        rs[addUnit.dst].busy = false;
+	        rs[addUnit.dst].disp = false;
+	        rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
         }
         else
         {
@@ -573,9 +600,20 @@ void checkBroadcast()
                 #endif
             }
         }
+
+        if( addUnit.cyclesRemaining > 0 )
+        {
+            addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
+        }
     }
 }
 
+/*
+ *  Function: printSimulatorOutput
+ *  Parameters: None
+ *  Returns: None
+ *  Description: displays current values for reservation stations, register file, register allocation table, and instruction queue
+ */
 void printSimulatorOutput()
 {
 	// print reservation station headers
@@ -584,8 +622,16 @@ void printSimulatorOutput()
 	// print reservation station values
 	for( uint8_t i = 1; i <= 5; i++ )
 	{
-		printf( "RS%u\t%u\t%s\t%u\t%u\t%s\t%s\t%u\n", i, rs[i].busy, strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp );
-	}
+		printf( "RS%u\t%u\t", i, rs[i].busy );
+        if( rs[i].busy )
+        {
+            printf( "%s\t%u\t%u\t%s\t%s\t%u\n", strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp );
+        }
+        else
+        {
+            printf( " \t \t \t \t \t \n" );
+        }
+    }
 	
 	// print RF and RAT headers
 	printf( "\n\tRF\t\tRAT\n" );
@@ -599,16 +645,16 @@ void printSimulatorOutput()
 		}
 		else
 		{
-			printf("%u:\t ");
+			printf( "%u:\t ", i );
 		}
 		
 		if( registerAllocationTable[i] != -1 )
 		{
-			printf("\t\t%s\n", strTags[registerAllocationTable[i]]);
+			printf( "\t\t%s\n", strTags[registerAllocationTable[i]] );
 		}
 		else
 		{
-			printf("\t\t \n");
+			printf( "\t\t \n" );
 		}
 	}
 	
@@ -618,4 +664,29 @@ void printSimulatorOutput()
 	{
 		printf( "%s R%u, R%u, R%u\n", strOpcodes[instructions[i].op], instructions[i].dst, instructions[i].srcOne, instructions[i].srcTwo );
 	}
+}
+
+/*
+ *  Function: printUnitOutputs
+ *  Parameters: None
+ *  Returns: None
+ *  Description: displays current values for ADD and MUL units (used for debugging)
+ */
+void printUnitOutputs()
+{
+    // print add unit structure members
+    printf( "ADD Unit:\n" );
+    printf( "\tBusy: %u\n", addUnit.busy );
+    printf( "\tCycles Remaining: %d\n", addUnit.cyclesRemaining );
+    printf( "\tResult: %d\n", addUnit.result );
+    printf( "\tDestination R.S.: %u\n", addUnit.dst );
+    printf( "\tBroadcast: %u\n\n", addUnit.broadcast );
+
+    // print mul unit structure members
+    printf( "MUL Unit:\n" );
+    printf( "\tBusy: %u\n", mulUnit.busy );
+    printf( "\tCycles Remaining: %d\n", mulUnit.cyclesRemaining );
+    printf( "\tResult: %d\n", mulUnit.result );
+    printf( "\tDestination R.S.: %u\n", mulUnit.dst );
+    printf( "\tBroadcast: %u\n\n", mulUnit.broadcast );
 }
