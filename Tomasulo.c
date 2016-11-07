@@ -516,11 +516,11 @@ void checkBroadcast()
                 }
             }
 			
-			// reset mulUnit and clear respected reservation station
-			mulUnit.busy = false;
-			rs[mulUnit.dst].busy = false;
-			rs[mulUnit.dst].disp = false;
-			rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
+	    // reset mulUnit and clear respected reservation station
+	    mulUnit.busy = false;
+	    rs[mulUnit.dst].busy = false;
+	    rs[mulUnit.dst].disp = false;
+	    rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
         }
     }    
 
@@ -558,11 +558,11 @@ void checkBroadcast()
                 }
             }
 			
-			// reset addUnit and clear respected reservation station
-			addUnit.busy = false;
-			rs[addUnit.dst].busy = false;
-			rs[addUnit.dst].disp = false;
-			rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
+	    // reset addUnit and clear respected reservation station
+	    addUnit.busy = false;
+	    rs[addUnit.dst].busy = false;
+	    rs[addUnit.dst].disp = false;
+	    rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
         }
         else
         {
