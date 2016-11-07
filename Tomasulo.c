@@ -625,7 +625,27 @@ void printSimulatorOutput()
 		printf( "RS%u\t%u\t", i, rs[i].busy );
         if( rs[i].busy )
         {
-            printf( "%s\t%u\t%u\t%s\t%s\t%u\n", strOpcodes[rs[i].op], rs[i].vj, rs[i].vk, strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp );
+            printf( "%s\t", strOpcodes[rs[i].op] );
+
+            if( rs[i].qj == 0 ) // if tag is empty print the value of vj
+            {
+                printf( "%u\t", rs[i].vj );
+            }
+            else
+            {
+                printf( " \t" );
+            }
+
+            if( rs[i].qk == 0 ) // if tag is empty print the value of vk
+            {
+                printf( "%u\t", rs[i].vk );
+            }
+            else
+            {
+                printf( " \t" );
+            }
+
+            printf( "%s\t%s\t%u\n", strTags[rs[i].qj], strTags[rs[i].qk], rs[i].disp );
         }
         else
         {
