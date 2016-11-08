@@ -20,7 +20,7 @@
 #define DELAY_SUB 2
 #define DELAY_MUL 10
 #define DELAY_DIV 40
-#define DEBUG_MODE // comment out to disable debugging
+//#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
 struct instruction
