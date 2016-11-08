@@ -175,33 +175,18 @@ int main( int argc, char * argv[] )
         {
             #ifdef DEBUG_MODE
             printf( "---CYCLE %u---\n", i );
-            printf( "1. PRE-DISPATCH:\n" );
-            printUnitOutputs();
-            printSimulatorOutput();
-            printf( "-------------\n\n" );
-            #endif
-            checkDispatch();
-            #ifdef DEBUG_MODE
-            printf( "2. PRE-ISSUE/POST-DISPATCH:\n" );
-            printUnitOutputs();
-            printSimulatorOutput();
-            printf( "-------------\n\n" );
-            #endif
-            checkIssue( instructionPosition );
-            #ifdef DEBUG_MODE
-            printf( "3. PRE-BROADCAST/POST-ISSUE:\n" );
+            printf( "1. PRE-BROADCAST:\n" );
             printUnitOutputs();
             printSimulatorOutput();
             printf( "-------------\n\n" );
             #endif
             checkBroadcast();
             #ifdef DEBUG_MODE
-            printf( "4. POST-BROADCAST:\n" );
+            printf( "2. POST-BROADCAST:\n" );
             printUnitOutputs();
             printSimulatorOutput();
             printf( "-------------\n\n" );
             #endif
-            
         }
         
         printSimulatorOutput(); // Display output for reservation stations, RF, RAT and instruction queue
@@ -520,6 +505,11 @@ void checkBroadcast()
         {
             broadcasting = true;
             
+            // reset mulUnit
+	        mulUnit.busy = false;
+
+            checkDispatch();
+
             for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
             {
                 if( rs[i].qj == mulUnit.dst )
@@ -544,10 +534,11 @@ void checkBroadcast()
                     registerFile[i] = mulUnit.result;
                 }
             }
-			
-	        // reset mulUnit and clear respective reservation station
-	        mulUnit.busy = false;
-	        rs[mulUnit.dst].busy = false;
+
+            checkIssue( instructionPosition );
+
+            // clear respective reservation station
+            rs[mulUnit.dst].busy = false;
 	        rs[mulUnit.dst].disp = false;
 	        rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
         }
@@ -556,12 +547,22 @@ void checkBroadcast()
         {
             mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
         }
-    }    
+    }
+    else
+    {
+        checkDispatch();
+        checkIssue( instructionPosition );
+    }
 
     if( addUnit.busy ) // broadcast ADD unit result if MUL unit isn't broadcasting
     {   
         if( addUnit.cyclesRemaining == 0 && !broadcasting ) // broadcast ADD unit result
         {
+            // reset addUnit
+	        addUnit.busy = false;
+
+            checkDispatch();
+
             for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
             {
                 if( rs[i].qj == addUnit.dst )
@@ -586,10 +587,11 @@ void checkBroadcast()
                     registerFile[i] = addUnit.result;
                 }
             }
-			
-	        // reset addUnit and clear respective reservation station
-	        addUnit.busy = false;
-	        rs[addUnit.dst].busy = false;
+            
+            checkIssue( instructionPosition );
+
+            // clear respective reservation station
+            rs[addUnit.dst].busy = false;
 	        rs[addUnit.dst].disp = false;
 	        rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
         }
@@ -607,6 +609,11 @@ void checkBroadcast()
         {
             addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
         }
+    }
+    else
+    {
+        checkDispatch();
+        checkIssue( instructionPosition );
     }
 }
 
