@@ -16,10 +16,10 @@
 
 // Constants
 #define ASCII_OFFSET 48
-#define DELAY_ADD 2
-#define DELAY_SUB 2
-#define DELAY_MUL 10
-#define DELAY_DIV 40
+#define DELAY_ADD 1
+#define DELAY_SUB 1
+#define DELAY_MUL 9
+#define DELAY_DIV 39
 //#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
@@ -60,6 +60,13 @@ struct integerMultiplyUnit
     bool broadcast;
 };
 
+struct temporaryContainerForUpdate
+{
+	bool busy;
+	uint8_t dst;
+	int32_t result;
+};
+
 // Global Declarations
 uint8_t numberOfInstructions;
 uint32_t numberOfCycles;
@@ -70,6 +77,7 @@ struct instruction instructions[10]; // 10-entry array of instruction records
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;
+struct temporaryContainerForUpdate temp;
 char* strOpcodes[4] = { "Add", "Sub", "Mul", "Div" };
 char* strTags[6] = { "", "RS1", "RS2", "RS3", "RS4", "RS5" }; // index 0 SHOULD be the empty string!
 
@@ -79,6 +87,7 @@ void checkDispatch();
 void checkBroadcast();
 void printSimulatorOutput();
 void printUnitOutputs();
+void checkUpdate();
 
 /*
  *  Function: main
@@ -96,10 +105,11 @@ int main( int argc, char * argv[] )
         // print argv[0] assuming it is the program name with the following usage hint to user
         printf( "usage: %s file_path\n", argv[0] );
     }
+    
     else // correct number of arguments
     {
         FILE * inputFile;
-        if( (inputFile = fopen( argv[1] , "r" )) == NULL )
+        if( (inputFile = fopen( "input.txt" , "r" )) == NULL )
         {
             printf( "Input file could not be opened... Exiting.\n" );
             exit( EXIT_FAILURE );
@@ -181,8 +191,33 @@ int main( int argc, char * argv[] )
             printf( "-------------\n\n" );
             #endif
             checkBroadcast();
+			
             #ifdef DEBUG_MODE
-            printf( "2. POST-BROADCAST:\n" );
+            printf( "2. PRE-DISPATCH/POST-BROADCAST:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
+			checkDispatch();
+			
+			#ifdef DEBUG_MODE
+            printf( "3. PRE-ISSUE/POST-DISPATCH:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
+			checkIssue( instructionPosition );
+			
+			#ifdef DEBUG_MODE
+            printf( "4. PRE-UPDATE/POST-ISSUE:\n" );
+            printUnitOutputs();
+            printSimulatorOutput();
+            printf( "-------------\n\n" );
+            #endif
+			checkUpdate();
+			
+			#ifdef DEBUG_MODE
+            printf( "5. POST-UPDATE:\n" );
             printUnitOutputs();
             printSimulatorOutput();
             printf( "-------------\n\n" );
@@ -494,7 +529,7 @@ void checkDispatch()
  *  Function: checkBroadcast
  *  Parameters: None
  *  Returns: None
- *  Description: check if results of unit(s) are ready to broadcast/capture
+ *  Description: check if results of unit(s) are ready to be freed.
  */
 void checkBroadcast()
 {
@@ -508,50 +543,16 @@ void checkBroadcast()
             // reset mulUnit
 	        mulUnit.busy = false;
 
-            checkDispatch();
-
-            for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
-            {
-                if( rs[i].qj == mulUnit.dst )
-                {
-                    rs[i].qj = 0;
-                    rs[i].vj = mulUnit.result;
-                }
-                
-                if( rs[i].qk == mulUnit.dst )
-                {
-                    rs[i].qk = 0;
-                    rs[i].vk = mulUnit.result;
-                }
-            }
-            
-            // clear matching RAT tags and update RF values
-            for( uint8_t i = 0; i < 8; i++ )
-            {
-                if( registerAllocationTable[i] == mulUnit.dst )
-                {
-                    registerAllocationTable[i] = 0;
-                    registerFile[i] = mulUnit.result;
-                }
-            }
-
-            checkIssue( instructionPosition );
-
-            // clear respective reservation station
-            rs[mulUnit.dst].busy = false;
-	        rs[mulUnit.dst].disp = false;
-	        rs[mulUnit.dst].op = rs[mulUnit.dst].vj = rs[mulUnit.dst].vk = rs[mulUnit.dst].qj = rs[mulUnit.dst].qk = 0;
+            // save values to temporaryContainer
+			temp.busy = true;
+			temp.dst = mulUnit.dst;
+			temp.result = mulUnit.result;
         }
 
         if( mulUnit.cyclesRemaining > 0 )
         {
             mulUnit.cyclesRemaining--; // decrement MUL unit cycles remaining
         }
-    }
-    else
-    {
-        checkDispatch();
-        checkIssue( instructionPosition );
     }
 
     if( addUnit.busy ) // broadcast ADD unit result if MUL unit isn't broadcasting
@@ -561,39 +562,11 @@ void checkBroadcast()
             // reset addUnit
 	        addUnit.busy = false;
 
-            checkDispatch();
-
-            for( uint8_t i = 1; i <= 5; i++ ) // update matching reservation station values (vj, vk) and clear tags (qj, qk)
-            {
-                if( rs[i].qj == addUnit.dst )
-                {
-                    rs[i].qj = 0;
-                    rs[i].vj = addUnit.result;
-                }
-                
-                if( rs[i].qk == addUnit.dst )
-                {
-                    rs[i].qk = 0;
-                    rs[i].vk = addUnit.result;
-                }
-            }
+			// save values to temporaryContainer
+			temp.busy = true;
+			temp.dst = addUnit.dst;
+			temp.result = addUnit.result;
             
-            // clear matching RAT tags and update RF values
-            for( uint8_t i = 0; i < 8; i++ )
-            {
-                if( registerAllocationTable[i] == addUnit.dst )
-                {
-                    registerAllocationTable[i] = 0;
-                    registerFile[i] = addUnit.result;
-                }
-            }
-            
-            checkIssue( instructionPosition );
-
-            // clear respective reservation station
-            rs[addUnit.dst].busy = false;
-	        rs[addUnit.dst].disp = false;
-	        rs[addUnit.dst].op = rs[addUnit.dst].vj = rs[addUnit.dst].vk = rs[addUnit.dst].qj = rs[addUnit.dst].qk = 0;
         }
         else
         {
@@ -610,11 +583,53 @@ void checkBroadcast()
             addUnit.cyclesRemaining--; // decrement ADD unit cycles remaining
         }
     }
-    else
-    {
-        checkDispatch();
-        checkIssue( instructionPosition );
-    }
+}
+
+/*
+ *  Function: checkUpdate
+ *  Parameters: None
+ *  Returns: None
+ *  Description: check if results of unit(s) are ready to broadcast/capture
+ */
+void checkUpdate()
+{
+	if( temp.busy )
+	{
+		// update matching reservation station values (vj, vk) and clear tags (qj, qk)
+		for( uint8_t i = 1; i <= 5; i++ ) 
+        {
+            if( rs[i].qj == temp.dst )
+            {
+                rs[i].qj = 0;
+                rs[i].vj = temp.result;
+            }
+            
+            if( rs[i].qk == temp.dst )
+            {
+                rs[i].qk = 0;
+                rs[i].vk = temp.result;
+            }
+        }
+		
+		// clear matching RAT tags and update RF values
+        for( uint8_t i = 0; i < 8; i++ )
+        {
+            if( registerAllocationTable[i] == temp.dst )
+            {
+                registerAllocationTable[i] = 0;
+                registerFile[i] = temp.result;
+            }
+        }
+		
+		// clear reservation station
+        rs[temp.dst].busy = false;
+	    rs[temp.dst].disp = false;
+	    rs[temp.dst].op = rs[temp.dst].vj = rs[temp.dst].vk = rs[temp.dst].qj = rs[temp.dst].qk = 0;
+		
+		// clear temporaryContainer
+		temp.busy = false;
+		temp.dst = temp.result = 0;
+	}
 }
 
 /*
