@@ -109,7 +109,7 @@ int main( int argc, char * argv[] )
     else // correct number of arguments
     {
         FILE * inputFile;
-        if( (inputFile = fopen( "input.txt" , "r" )) == NULL )
+        if( (inputFile = fopen( argv[1], "r" )) == NULL )
         {
             printf( "Input file could not be opened... Exiting.\n" );
             exit( EXIT_FAILURE );
