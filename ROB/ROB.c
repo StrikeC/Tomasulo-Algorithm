@@ -41,8 +41,8 @@ int main( int argc, char * argv[] )
     
     else // correct number of arguments
     {
-		
-	}
-	
-	return 0;
+        
+    }
+    
+    return 0;
 }
