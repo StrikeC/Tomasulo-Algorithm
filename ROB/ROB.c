@@ -20,6 +20,7 @@
 #define DELAY_SUB 1
 #define DELAY_MUL 9
 #define DELAY_DIV 39
+//#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
 struct reorderBuffer
@@ -76,7 +77,31 @@ struct temporaryContainerForUpdate
 	int32_t result;
 };
 
-//#define DEBUG_MODE // comment out to disable debugging
+// Global Declarations
+uint8_t numberOfInstructions;
+uint32_t numberOfCycles;
+int32_t registerFile[8]; // 8-entry array of integers used as register file
+int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (0 means empty)
+uint8_t instructionPosition = 0; // acts as a queue pointer
+uint8_t issuePointer = 1; // issue pointer for re-order buffer
+uint8_t commitPointer = 1; // commit pointer for re-order buffer
+struct instruction instructions[10]; // 10-entry array of instruction records
+struct reorderBuffer rob[7]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
+struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
+struct integerAddUnit addUnit;
+struct integerMultiplyUnit mulUnit;
+struct temporaryContainerForUpdate temp;
+char* strOpcodes[4] = { "Add", "Sub", "Mul", "Div" };
+char* strTags[6] = { "", "RS1", "RS2", "RS3", "RS4", "RS5" }; // index 0 SHOULD be the empty string!
+
+// Function Declarations
+void checkIssue( uint8_t instructionIndex );
+void checkDispatch();
+void checkBroadcast();
+void printSimulatorOutput();
+void printUnitOutputs();
+void checkUpdate();
+
 
 /*
  *  Function: main
