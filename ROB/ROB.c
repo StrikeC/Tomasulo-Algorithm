@@ -83,7 +83,7 @@ uint32_t numberOfCycles;
 int32_t registerFile[8]; // 8-entry array of integers used as register file
 int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (0 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
-uint8_t issuePointer = 1; // issue pointer for re-order buffer
+uint8_t issuePointer = 1; // issue pointer for re-order buffer, indicates that ROB is full when it equals to zero
 uint8_t commitPointer = 1; // commit pointer for re-order buffer
 struct instruction instructions[10]; // 10-entry array of instruction records
 struct reorderBuffer rob[7]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
