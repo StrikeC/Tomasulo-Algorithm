@@ -28,6 +28,7 @@ struct reorderBuffer
     uint8_t dst;
     int32_t value;
     bool commit;
+    bool exception;
 };
 
 //#define DEBUG_MODE // comment out to disable debugging
