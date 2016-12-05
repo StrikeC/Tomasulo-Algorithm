@@ -20,6 +20,16 @@
 #define DELAY_SUB 1
 #define DELAY_MUL 9
 #define DELAY_DIV 39
+
+// Structures
+struct reorderBuffer
+{
+    uint8_t op;
+    uint8_t dst;
+    int32_t value;
+    bool commit;
+};
+
 //#define DEBUG_MODE // comment out to disable debugging
 
 /*
