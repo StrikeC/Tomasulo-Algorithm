@@ -25,10 +25,55 @@
 struct reorderBuffer
 {
     uint8_t op;
-    uint8_t dst;
+    uint8_t dst; // indicates the destination in RF
     int32_t value;
     bool commit;
     bool exception;
+};
+
+struct instruction
+{
+    uint8_t op;
+    uint8_t dst;
+    uint8_t srcOne;
+    uint8_t srcTwo;
+};
+
+struct reservationStation
+{
+    bool busy;
+    uint8_t op;
+    uint8_t dstRob; // indicates the destination in ROB
+    int32_t vj;
+    int32_t vk;
+    uint8_t qj;
+    uint8_t qk;
+    bool disp;
+};
+
+struct integerAddUnit
+{
+    bool busy;
+    int8_t cyclesRemaining;
+    int32_t result;
+    uint8_t dst; // indicates the reservation station where instructions come from
+    bool broadcast;
+};
+
+struct integerMultiplyUnit
+{
+    bool busy;
+    int8_t cyclesRemaining;
+    int32_t result;
+    uint8_t dst; // indicates the reservation station where instructions come from
+    bool broadcast;
+};
+
+struct temporaryContainerForUpdate
+{
+	bool busy;
+	uint8_t dst;
+	int32_t result;
 };
 
 //#define DEBUG_MODE // comment out to disable debugging
