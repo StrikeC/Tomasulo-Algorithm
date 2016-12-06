@@ -26,6 +26,7 @@
 // Structures
 struct reorderBuffer
 {
+	bool busy;
     uint8_t op;
     uint8_t dst; // indicates the destination in RF
     int32_t value;
@@ -50,7 +51,6 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
-    //bool disp;
 };
 
 struct integerAddUnit
@@ -59,7 +59,6 @@ struct integerAddUnit
     int8_t cyclesRemaining;
     int32_t result;
     uint8_t dst; // indicates the destination in ROB
-    bool broadcast;
 };
 
 struct integerMultiplyUnit
@@ -68,13 +67,13 @@ struct integerMultiplyUnit
     int8_t cyclesRemaining;
     int32_t result;
     uint8_t dst; // indicates the destination in ROB
-    bool broadcast;
 	bool exception;
 };
 
 struct temporaryContainerForUpdate
 {
 	bool busy;
+	bool exception;
 	uint8_t dst;
 	int32_t result;
 };
@@ -85,10 +84,10 @@ uint32_t numberOfCycles;
 int32_t registerFile[8]; // 8-entry array of integers used as register file
 int8_t registerAllocationTable[8]; // 8-entry array of integers used as RAT (0 means empty)
 uint8_t instructionPosition = 0; // acts as a queue pointer
-uint8_t issuePointer = 1; // issue pointer for re-order buffer, indicates that ROB is full when it equals to zero
-uint8_t commitPointer = 1; // commit pointer for re-order buffer
+uint8_t issuePointer = 1; // issue pointer for re-order buffer, range 1 - 6
+uint8_t commitPointer = 1; // commit pointer for re-order buffer, range 1 - 6
 struct instruction instructions[10]; // 10-entry array of instruction records
-struct reorderBuffer rob[7]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
+struct reorderBuffer rob[6]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;

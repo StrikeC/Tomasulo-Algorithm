@@ -12,7 +12,7 @@ void checkIssue( uint8_t instructionIndex )
         return;
     }
 	// return if re-order buffer is full
-	if( issuePointer == 0)
+	if( rob[issuePointer].busy )
 	{
 		return;
 	}
@@ -25,11 +25,17 @@ void checkIssue( uint8_t instructionIndex )
         {
             if( !rs[i].busy && !issuedSuccessfully )
             {
-                rs[i].busy = true;
-                rs[i].op = rob[issuePointer].op = instructions[instructionIndex].op;
+				issuedSuccessfully = true;
+				
+				// set re-order buffer
+				rob[issuePointer].busy = true;
+				rob[issuePointer].op = instructions[instructionIndex].op;
+				rob[issuePointer].dst = instructions[instructionIndex].dst;
+				
+				// set reservation station
+				rs[i].busy = true;
+                rs[i].op = instructions[instructionIndex].op;
 				rs[i].dst = issuePointer;
-                rob[issuePointer].dst = instructions[instructionIndex].dst;
-
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne] == 0 )
                 {
@@ -49,11 +55,9 @@ void checkIssue( uint8_t instructionIndex )
                 {
                     rs[i].qk = registerAllocationTable[instructions[instructionIndex].srcTwo];
                 }
-
-                // update destination's RAT with ROB index
-				registerAllocationTable[instructions[instructionIndex].dst] = issuePointer; 
-            
-                issuedSuccessfully = true;
+				
+				// update destination's RAT with ROB index
+				registerAllocationTable[instructions[instructionIndex].dst] = issuePointer;
             }
         }
 
@@ -63,11 +67,11 @@ void checkIssue( uint8_t instructionIndex )
 			
 			if( issuePointer == 6 )
 			{
-				issuePointer = 0; // ROB is full
+				issuePointer = 1; // reset issue pointer
 			}
 			else
 			{
-				issuePointer++; // move issue pointer in ROB to next position
+				issuePointer++; // move issue pointer to next ROB position
 			}
         }
     }
@@ -79,11 +83,17 @@ void checkIssue( uint8_t instructionIndex )
         {
             if( !rs[i].busy && !issuedSuccessfully )
             {
+				issuedSuccessfully = true;
+				
+				// set re-order buffer
+				rob[issuePointer].busy = true;
+				rob[issuePointer].op = instructions[instructionIndex].op;
+				rob[issuePointer].dst = instructions[instructionIndex].dst;
+				
+				// set reservation station
                 rs[i].busy = true;
-                rs[i].op = rob[issuePointer].op = instructions[instructionIndex].op;
+                rs[i].op = instructions[instructionIndex].op;
 				rs[i].dst = issuePointer;
-                rob[issuePointer].dst = instructions[instructionIndex].dst;
-
                 // source one value/name transmit
                 if( registerAllocationTable[instructions[instructionIndex].srcOne] == 0 )
                 {
@@ -107,7 +117,7 @@ void checkIssue( uint8_t instructionIndex )
                 // update destination's RAT with ROB index
 				registerAllocationTable[instructions[instructionIndex].dst] = issuePointer; 
             
-                issuedSuccessfully = true;
+				
             }
         }
 
@@ -117,11 +127,11 @@ void checkIssue( uint8_t instructionIndex )
 			
 			if( issuePointer == 6 )
 			{
-				issuePointer = 0; // ROB is full
+				issuePointer = 1; // reset issue pointer
 			}
 			else
 			{
-				issuePointer++; // move issue pointer in ROB to next position
+				issuePointer++; // move issue pointer to next ROB position
 			}
         }
     }
