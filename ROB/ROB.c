@@ -20,6 +20,7 @@
 #define DELAY_SUB 1
 #define DELAY_MUL 9
 #define DELAY_DIV 39
+#define DELAY_DIV_EXCEPTION 37
 //#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
@@ -44,12 +45,12 @@ struct reservationStation
 {
     bool busy;
     uint8_t op;
-    uint8_t dstRob; // indicates the destination in ROB
+    uint8_t dst; // indicates the destination in ROB
     int32_t vj;
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
-    bool disp;
+    //bool disp;
 };
 
 struct integerAddUnit
@@ -57,7 +58,7 @@ struct integerAddUnit
     bool busy;
     int8_t cyclesRemaining;
     int32_t result;
-    uint8_t dst; // indicates the reservation station where instructions come from
+    uint8_t dst; // indicates the destination in ROB
     bool broadcast;
 };
 
@@ -66,8 +67,9 @@ struct integerMultiplyUnit
     bool busy;
     int8_t cyclesRemaining;
     int32_t result;
-    uint8_t dst; // indicates the reservation station where instructions come from
+    uint8_t dst; // indicates the destination in ROB
     bool broadcast;
+	bool exception;
 };
 
 struct temporaryContainerForUpdate
