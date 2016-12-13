@@ -30,7 +30,7 @@ struct reorderBuffer
     uint8_t op;
     uint8_t dst; // indicates the destination in RF
     int32_t value;
-    bool commit;
+    bool done;
     bool exception;
 };
 
