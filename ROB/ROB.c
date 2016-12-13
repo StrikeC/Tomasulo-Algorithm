@@ -30,7 +30,7 @@ struct reorderBuffer
     uint8_t op;
     uint8_t dst; // indicates the destination in RF
     int32_t value;
-    bool commit;
+    bool done;
     bool exception;
 };
 
@@ -87,7 +87,7 @@ uint8_t instructionPosition = 0; // acts as a queue pointer
 uint8_t issuePointer = 1; // issue pointer for re-order buffer, range 1 - 6
 uint8_t commitPointer = 1; // commit pointer for re-order buffer, range 1 - 6
 struct instruction instructions[10]; // 10-entry array of instruction records
-struct reorderBuffer rob[6]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
+struct reorderBuffer rob[7]; // 7-entry array of re-order buffer (ROB0-ROB6), don't use ROB0
 struct reservationStation rs[6]; // 6-entry array of reservation stations (RS0-RS5), don't use RS0
 struct integerAddUnit addUnit;
 struct integerMultiplyUnit mulUnit;

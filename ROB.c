@@ -75,6 +75,9 @@ struct temporaryContainerForUpdate
 	bool busy;
 	bool exception;
 	uint8_t dst;
+	uint8_t rsDstAdd;
+	uint8_t rsDstMul;
+	uint8_t robDstCom;
 	int32_t result;
 };
 
