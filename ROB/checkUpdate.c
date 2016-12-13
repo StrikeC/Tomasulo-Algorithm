@@ -26,6 +26,17 @@ void checkUpdate()
 		
 		// update re-order buffer value
 		rob[temp.dst].value = temp.result;
+		rob[temp.dst].done = true;
+		
+		// reset reservation station - from DISPATCH
+		rs[temp.rsDstAdd].busy = false;
+		rs[temp.rsDstAdd].op = rs[temp.rsDstAdd].dst = rs[temp.rsDstAdd].vj = rs[temp.rsDstAdd].vk = 0;
+		rs[temp.rsDstMul].busy = false;
+		rs[temp.rsDstMul].op = rs[temp.rsDstMul].dst = rs[temp.rsDstMul].vj = rs[temp.rsDstMul].vk = 0;
+		
+		// reset re-order buffer - from COMMIT
+		rob[temp.robDstCom].busy = rob[temp.robDstCom].done = rob[temp.robDstCom].exception = false;
+		rob[temp.robDstCom].op = rob[temp.robDstCom].dst = rob[temp.robDstCom].value = 0;
 		
 		// reset temporaryContainer
 		temp.busy = false;

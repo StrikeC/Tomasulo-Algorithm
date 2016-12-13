@@ -32,9 +32,8 @@ void checkDispatch()
 						addUnit.cyclesRemaining = DELAY_SUB;
 						break;
 				}
-				// reset reservation station
-				rs[1].busy = false;
-				rs[1].op = rs[1].dst = rs[1].vj = rs[1].vk = 0;
+				// reset reservation station in Temp
+				temp.rsDstAdd = 1;
 			}
 			else
 			{
@@ -72,8 +71,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
-				rs[2].busy = false;
-				rs[2].op = rs[2].dst = rs[2].vj = rs[2].vk = 0;
+				temp.rsDstAdd = 2;
 			}
 			else
 			{
@@ -111,8 +109,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
-				rs[3].busy = false;
-				rs[3].op = rs[3].dst = rs[3].vj = rs[3].vk = 0;
+				temp.rsDstAdd = 3;
 			}
 			else
 			{
@@ -159,8 +156,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
-				rs[4].busy = false;
-				rs[4].op = rs[4].dst = rs[4].vj = rs[4].vk = 0;
+				temp.rsDstMul = 4;
 			}
 			else
 			{
@@ -207,8 +203,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
-				rs[5].busy = false;
-				rs[5].op = rs[5].dst = rs[5].vj = rs[5].vk = 0;
+				temp.rsDstMul = 5;
 			}
 			else
 			{
