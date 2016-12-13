@@ -34,12 +34,15 @@ bool checkCommit()
 		// reset rob
 		temp.robDstCom = commitPointer;
 		
+		// update RF/RAT
 		if( registerAllocationTable[rob[commitPointer].dst] = commitPointer)
 		{
 			registerAllocationTable[rob[commitPointer].dst] = 0;
 			registerFile[rob[commitPointer].dst] = rob[commitPointer].value;
 		}
 		
+		// move pointer to the next 
+		commitPointer++;
 	}
 	
 }
