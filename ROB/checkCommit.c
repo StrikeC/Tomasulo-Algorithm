@@ -32,6 +32,7 @@ bool checkCommit()
 	else
 	{
 		// reset rob
+		temp.busyCom = true;
 		temp.robDstCom = commitPointer;
 		
 		if( registerAllocationTable[rob[commitPointer].dst] = commitPointer)

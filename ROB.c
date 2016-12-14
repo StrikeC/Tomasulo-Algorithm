@@ -74,7 +74,9 @@ struct integerMultiplyUnit
 
 struct temporaryContainerForUpdate
 {
-    bool busy;
+    bool busyBro;
+	bool busyDis;
+	bool busyCom;
     bool exception;
     uint8_t dst;
     uint8_t rsDstAdd;

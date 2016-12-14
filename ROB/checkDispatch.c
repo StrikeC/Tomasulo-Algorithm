@@ -33,6 +33,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station in Temp
+				temp.busyDis = true;
 				temp.rsDstAdd = 1;
 			}
 			else
@@ -71,6 +72,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
+				temp.busyDis = true;
 				temp.rsDstAdd = 2;
 			}
 			else
@@ -109,6 +111,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
+				temp.busyDis = true;
 				temp.rsDstAdd = 3;
 			}
 			else
@@ -156,6 +159,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
+				temp.busyDis = true;
 				temp.rsDstMul = 4;
 			}
 			else
@@ -203,6 +207,7 @@ void checkDispatch()
 						break;
 				}
 				// reset reservation station
+				temp.busyDis = true;
 				temp.rsDstMul = 5;
 			}
 			else

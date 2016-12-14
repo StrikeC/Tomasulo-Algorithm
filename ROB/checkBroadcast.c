@@ -14,7 +14,7 @@ void checkBroadcast()
 			broadcasting = true;
 			
 			// save values to temporaryContainer
-			temp.busy = true;
+			temp.busyBro = true;
 			temp.exception = mulUnit.exception;
 			temp.dst = mulUnit.dst;
 			temp.result = mulUnit.result;
@@ -37,7 +37,7 @@ void checkBroadcast()
 			broadcasting = true;
 			
 			// save values to temporaryContainer
-			temp.busy = true;
+			temp.busyBro = true;
 			temp.dst = addUnit.dst;
 			temp.result = addUnit.result;
 			
