@@ -443,6 +443,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station in Temp
+				temp.busyDis = true;
                 temp.rsDstAdd = 1;
             }
             else
@@ -480,6 +481,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
+				temp.busyDis = true;
                 temp.rsDstAdd = 2;
             }
             else
@@ -517,6 +519,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
+				temp.busyDis = true;
                 temp.rsDstAdd = 3;
             }
             else
@@ -563,6 +566,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
+				temp.busyDis = true;
                 temp.rsDstMul = 4;
             }
             else
@@ -609,6 +613,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
+				temp.busyDis = true;
                 temp.rsDstMul = 5;
             }
             else
@@ -637,7 +642,7 @@ void checkBroadcast()
             broadcasting = true;
             
             // save values to temporaryContainer
-            temp.busy = true;
+            temp.busyBro = true;
             temp.exception = mulUnit.exception;
             temp.dst = mulUnit.dst;
             temp.result = mulUnit.result;
@@ -660,7 +665,7 @@ void checkBroadcast()
             broadcasting = true;
             
             // save values to temporaryContainer
-            temp.busy = true;
+            temp.busyBro = true;
             temp.dst = addUnit.dst;
             temp.result = addUnit.result;
             
@@ -718,6 +723,7 @@ bool checkCommit()
     else
     {
         // reset rob
+		temp.busyCom;
         temp.robDstCom = commitPointer;
         
         if( registerAllocationTable[rob[commitPointer].dst] = commitPointer )
@@ -873,7 +879,7 @@ void printUnitOutputs()
  */
 void checkUpdate()
 {
-    if( temp.busy )
+    if( temp.busyBro )
     {
         // update matching reservation station values (vj, vk) and clear tags (qj, qk)
         for( uint8_t i = 1; i <= 5; i++ )
@@ -893,20 +899,32 @@ void checkUpdate()
         
         // update re-order buffer value
         rob[temp.dst].value = temp.result;
+		rob[temp.dst].exception = temp.exception;
         rob[temp.dst].done = true;
-        
-        // reset reservation station - from DISPATCH
-        rs[temp.rsDstAdd].busy = false;
-        rs[temp.rsDstAdd].op = rs[temp.rsDstAdd].dst = rs[temp.rsDstAdd].vj = rs[temp.rsDstAdd].vk = 0;
-        rs[temp.rsDstMul].busy = false;
-        rs[temp.rsDstMul].op = rs[temp.rsDstMul].dst = rs[temp.rsDstMul].vj = rs[temp.rsDstMul].vk = 0;
-        
-        // reset re-order buffer - from COMMIT
-        rob[temp.robDstCom].busy = rob[temp.robDstCom].done = rob[temp.robDstCom].exception = false;
-        rob[temp.robDstCom].op = rob[temp.robDstCom].dst = rob[temp.robDstCom].value = 0;
-        
+		
         // reset temporaryContainer
-        temp.busy = false;
+        temp.busyBro = false;
         temp.exception = false;
     }
+	if( temp.busyDis )
+	{
+		// reset reservation station - from DISPATCH
+		rs[temp.rsDstAdd].busy = false;
+		rs[temp.rsDstAdd].op = rs[temp.rsDstAdd].dst = rs[temp.rsDstAdd].vj = rs[temp.rsDstAdd].vk = 0;
+		rs[temp.rsDstMul].busy = false;
+		rs[temp.rsDstMul].op = rs[temp.rsDstMul].dst = rs[temp.rsDstMul].vj = rs[temp.rsDstMul].vk = 0;
+		
+		// reset temporaryContainer
+		temp.busyDis = false;
+	}
+	
+	if( temp.busyCom )
+	{
+		// reset re-order buffer - from COMMIT
+		rob[temp.robDstCom].busy = rob[temp.robDstCom].done = rob[temp.robDstCom].exception = false;
+		rob[temp.robDstCom].op = rob[temp.robDstCom].dst = rob[temp.robDstCom].value = 0;
+		
+		// reset temporaryContainer
+		temp.busyCom = false;
+	}
 }
