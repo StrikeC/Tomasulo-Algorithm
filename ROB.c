@@ -716,7 +716,10 @@ bool checkCommit()
 			}
 			
 			// clear rat
-			memset(registerAllocationTable, 0, sizeof(registerAllocationTable));
+			for( uint8_t i = 0; i <= 7; i++ )
+			{
+				registerAllocationTable[i] = 0;
+			}
 			
 			// return exit
 			return true;
