@@ -22,7 +22,7 @@
 #define DELAY_MUL 9
 #define DELAY_DIV 39
 #define DELAY_DIV_EXCEPTION 37
-//#define DEBUG_MODE // comment out to disable debugging
+#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
 struct reorderBuffer
@@ -52,6 +52,7 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
+    bool disp;
 };
 
 struct integerAddUnit
@@ -722,6 +723,17 @@ bool checkCommit()
             registerAllocationTable[rob[commitPointer].dst] = 0;
             registerFile[rob[commitPointer].dst] = rob[commitPointer].value;
         }
+
+        // update commit pointer
+        if( commitPointer == 6 )
+        {
+            commitPointer = 1;
+        }
+        else
+        {
+            commitPointer++;
+        }
+
         return false;
     }
 }
