@@ -52,7 +52,6 @@ struct reservationStation
     int32_t vk;
     uint8_t qj;
     uint8_t qk;
-    bool disp;
 };
 
 struct integerAddUnit
