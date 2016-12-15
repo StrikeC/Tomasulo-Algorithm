@@ -732,7 +732,7 @@ bool checkCommit()
 			temp.robDstCom = commitPointer;
 			
 			// update RAT/RF
-			if( registerAllocationTable[rob[commitPointer].dst] = commitPointer )
+			if( registerAllocationTable[rob[commitPointer].dst] == commitPointer )
 			{
 				registerAllocationTable[rob[commitPointer].dst] = 0;
 				registerFile[rob[commitPointer].dst] = rob[commitPointer].value;
