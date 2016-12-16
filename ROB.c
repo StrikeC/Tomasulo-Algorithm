@@ -22,7 +22,7 @@
 #define DELAY_MUL 9
 #define DELAY_DIV 39
 #define DELAY_DIV_EXCEPTION 37
-#define DEBUG_MODE // comment out to disable debugging
+//#define DEBUG_MODE // comment out to disable debugging
 
 // Structures
 struct reorderBuffer
@@ -75,7 +75,8 @@ struct integerMultiplyUnit
 struct temporaryContainerForUpdate
 {
     bool busyBro;
-	bool busyDis;
+	bool busyDisAdd;
+    bool busyDisMul;
 	bool busyCom;
     bool exception;
     uint8_t dst;
@@ -443,7 +444,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station in Temp
-				temp.busyDis = true;
+				temp.busyDisAdd = true;
                 temp.rsDstAdd = 1;
             }
             else
@@ -481,7 +482,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
-				temp.busyDis = true;
+				temp.busyDisAdd = true;
                 temp.rsDstAdd = 2;
             }
             else
@@ -519,7 +520,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
-				temp.busyDis = true;
+				temp.busyDisAdd = true;
                 temp.rsDstAdd = 3;
             }
             else
@@ -566,7 +567,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
-				temp.busyDis = true;
+				temp.busyDisMul = true;
                 temp.rsDstMul = 4;
             }
             else
@@ -613,7 +614,7 @@ void checkDispatch()
                         break;
                 }
                 // reset reservation station
-				temp.busyDis = true;
+				temp.busyDisMul = true;
                 temp.rsDstMul = 5;
             }
             else
@@ -721,6 +722,9 @@ bool checkCommit()
 				registerAllocationTable[i] = 0;
 			}
 			
+            // set commit pointer equal to issue pointer
+            commitPointer = issuePointer;
+
 			// return exit
 			return true;
 			
@@ -762,7 +766,7 @@ bool checkCommit()
 void printSimulatorOutput()
 {
     // print reservation station headers
-    printf( "\n\tBusy\tOp\tVj\tVk\tQj\tQk\n" );
+    printf( "\n\tBusy\tOp\tDest\tVj\tVk\tQj\tQk\n" );
     
     // print reservation station values
     for( uint8_t i = 1; i <= 5; i++ )
@@ -770,7 +774,7 @@ void printSimulatorOutput()
         printf( "RS%u\t%u\t", i, rs[i].busy );
         if( rs[i].busy )
         {
-            printf( "%s\t", strOpcodes[rs[i].op] );
+            printf( "%s\t%s\t", strOpcodes[rs[i].op], strTags[rs[i].dst] );
 
             if( rs[i].qj == 0 ) // if tag is empty print the value of vj
             {
@@ -913,16 +917,24 @@ void checkUpdate()
         temp.busyBro = false;
         temp.exception = false;
     }
-	if( temp.busyDis )
+	if( temp.busyDisAdd )
 	{
 		// reset reservation station - from DISPATCH
 		rs[temp.rsDstAdd].busy = false;
 		rs[temp.rsDstAdd].op = rs[temp.rsDstAdd].dst = rs[temp.rsDstAdd].vj = rs[temp.rsDstAdd].vk = 0;
+		
+		// reset temporaryContainer
+		temp.busyDisAdd = false;
+	}
+    
+    if( temp.busyDisMul )
+	{
+		// reset reservation station - from DISPATCH
 		rs[temp.rsDstMul].busy = false;
 		rs[temp.rsDstMul].op = rs[temp.rsDstMul].dst = rs[temp.rsDstMul].vj = rs[temp.rsDstMul].vk = 0;
 		
 		// reset temporaryContainer
-		temp.busyDis = false;
+		temp.busyDisMul = false;
 	}
 	
 	if( temp.busyCom )
